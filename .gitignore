@@ -9,7 +9,6 @@ __trash__/
 __delete/
 *.py[cod]
 *$py.class
-result
 
 .DS_Store
 
