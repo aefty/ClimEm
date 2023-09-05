@@ -1,0 +1,48 @@
+\begin{thebibliography}{4}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+
+\bibitem[{Ciais et~al.(2014)Ciais, Sabine, Bala, Bopp, Brovkin, et~al., and
+  House}]{IPCC_carbon_cycle}
+Ciais, P., C.~Sabine, G.~Bala, L.~Bopp, V.~Brovkin, et~al., and {Joanna Isobel}
+  House. 2014.
+\newblock \emph{Carbon and Other Biogeochemical Cycles}.
+\newblock United Kingdom: Cambridge University Press, 465--570.
+
+\bibitem[{Joos et~al.(2013)Joos, Roth, Fuglestvedt, Peters, Enting, Bloh,
+  Brovkin, Burke, Eby, Edwards et~al.}]{joos2013carbon}
+Joos, Fortunat, Raphael Roth, Jan~S Fuglestvedt, Glen~P Peters, Ian~G Enting,
+  W~von Bloh, Victor Brovkin, Eleanor~J Burke, Michael Eby, Neil~R Edwards
+  et~al. 2013.
+\newblock \enquote{Carbon dioxide and climate impulse response functions for
+  the computation of greenhouse gas metrics: a multi-model analysis.}
+\newblock \emph{Atmospheric Chemistry and Physics} 13~(5):2793--2825.
+
+\bibitem[{Storn and Price(1997)}]{diff_evol}
+Storn, Rainer and Kenneth Price. 1997.
+\newblock \enquote{Differential Evolution --A Simple and Efficient Heuristic
+  for global Optimization over Continuous Spaces.}
+\newblock \emph{Journal of Global Optimization} 11~(4):341--359.
+\newblock \urlprefix\url{https://doi.org/10.1023/A:1008202821328}.
+
+\bibitem[{Virtanen et~al.(2020)Virtanen, Gommers, Oliphant, Haberland, Reddy,
+  Cournapeau, Burovski, Peterson, Weckesser, Bright, {van der Walt}, Brett,
+  Wilson, Millman, Mayorov, Nelson, Jones, Kern, Larson, Carey, Polat, Feng,
+  Moore, {VanderPlas}, Laxalde, Perktold, Cimrman, Henriksen, Quintero, Harris,
+  Archibald, Ribeiro, Pedregosa, {van Mulbregt}, and {SciPy 1.0
+  Contributors}}]{scipy}
+Virtanen, Pauli, Ralf Gommers, Travis~E. Oliphant, Matt Haberland, Tyler Reddy,
+  David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan
+  Bright, St{\'e}fan~J. {van der Walt}, Matthew Brett, Joshua Wilson, K.~Jarrod
+  Millman, Nikolay Mayorov, Andrew R.~J. Nelson, Eric Jones, Robert Kern, Eric
+  Larson, C~J Carey, {\.I}lhan Polat, Yu~Feng, Eric~W. Moore, Jake
+  {VanderPlas}, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen,
+  E.~A. Quintero, Charles~R. Harris, Anne~M. Archibald, Ant{\^o}nio~H. Ribeiro,
+  Fabian Pedregosa, Paul {van Mulbregt}, and {SciPy 1.0 Contributors}. 2020.
+\newblock \enquote{{{SciPy} 1.0: Fundamental Algorithms for Scientific
+  Computing in Python}.}
+\newblock \emph{Nature Methods} 17:261--272.
+
+\end{thebibliography}
