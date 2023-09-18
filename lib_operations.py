@@ -4,21 +4,17 @@ from prettytable import PrettyTable
 import lib_data_load as data_load
 from lib_models import model_3sr, model_4pr
 
-
 def l2_err(x, x_true):
     temp = (x - x_true) 
     return np.linalg.norm(temp, ord=2) 
-
 
 def l1_err(x, x_true):
     temp = (x - x_true) 
     return np.linalg.norm(temp, ord=1) 
 
-
 def linf_err(x, x_true):
     temp = (x - x_true)
     return np.max(np.abs(temp))
-
 
 def eig(A: np.array) -> list:
     """eigen value decomposion
@@ -39,7 +35,6 @@ def eig(A: np.array) -> list:
     eig_vec = eig_vec[:, idx]
 
     return [eig_val, eig_vec]
-
 
 def simulate_pulse(A: np.array, m0: np.array, T: int) -> np.array:
     """Simulate the ODE for the given operator starting from state x0 for T steps
@@ -74,11 +69,9 @@ def simulate_pulse(A: np.array, m0: np.array, T: int) -> np.array:
 
     return m
 
-
-
 def simulate_dynamic(A_set, m0, T, 
     e=None,
-    c1= 0.137, 
+    c1=0.137, 
     c3=0.73, 
     c4=0.00689, 
     F2XCO2=3.45,
@@ -86,7 +79,7 @@ def simulate_dynamic(A_set, m0, T,
     TAT0=0,#1.1,
     TOC0=0,#0.27,
     delta_t=1,
-    m_A_eq = 589
+    m_A_eq=589
     ) -> list:
 
     p = A_set[0].shape[0]
@@ -128,17 +121,16 @@ def simulate_dynamic(A_set, m0, T,
 
     return [m, temprature_at, temprature_oc]
 
-
+# see https://www.umr-cnrm.fr/IMG/pdf/2box_i.pdf
 def simulate(A, m0, T, 
     e=None,
-    c1= 0.137, 
+    c1=0.137, 
     c3=0.73, 
     c4=0.00689, 
     F2XCO2=3.45,
     T2XCO2=3.25, 
     TAT0=0,#1.1,
     TOC0=0,#0.27,
-    delta_t=1,
     m_A_eq = 589
     ) -> list:
 
@@ -167,6 +159,8 @@ def simulate(A, m0, T,
     temprature_at[0] = TAT0
     temprature_oc[0] = TOC0
 
+    delta_t=1
+
     m[:, 0] = m0
     m[:, 0] += e[:,0]
     for t in range(1, T):
@@ -181,6 +175,133 @@ def simulate(A, m0, T,
 
     return [m, temprature_at, temprature_oc]
 
+# see https://www.umr-cnrm.fr/IMG/pdf/2box_i.pdf
+def simulate_new(A, m0, T, 
+    e=None,
+    C=7.3, 
+    C0=106, 
+    l=1.13, 
+    gamma= 0.73,
+    FX_ratio = 1,
+    F2XCO2 = 3.6813,
+    TAT0=0,#1.1,
+    TOC0=0,#0.27,
+    m_A_eq = 589
+    ) -> list:
+
+    p = A.shape[0]
+    assert p == len(m0)
+
+    # Initial variables
+    if e is None:
+        e = np.zeros(shape=(p,T))
+
+    assert T == e.shape[1]
+
+    if np.isscalar(FX_ratio):
+        FX_ratio = np.ones(T)*FX_ratio
+    else:
+        assert len(FX_ratio)==T
+
+    m = np.empty(shape=(p, T))
+    temprature_oc = np.zeros(T)
+    temprature_at = np.zeros(T)
+
+    G = np.zeros(shape=(2,2))
+    G[0,0] = -(l+gamma)/C
+    G[0,1] = gamma/C
+    G[1,0] = gamma/C0
+    G[1,1] = -gamma/C0
+
+    # Using m_new = Am_new + m 
+    # (I-A)m_new = m 
+    #  m_new = inv(I-A) @ m
+    # than we add new emission on, i.e., m_new_t += e_t
+    # A is now time depenatnt ... we need to do this on every iteration
+    I = np.eye(p)
+
+    B = np.linalg.inv(np.eye(p) - A)
+
+    temprature = np.zeros(shape=(2,T))
+    temprature[0,0] = TAT0
+    temprature[1,0] = TOC0
+
+    b = np.zeros(2).T
+
+    m[:, 0] = m0
+    m[:, 0] += e[:,0]
+    for t in range(1, T):
+
+        m[:, t] = B @ m[:, t - 1] + e[:,t]
+        F_t =  FX_ratio[t-1] * F2XCO2 * np.log(m[0, t-1] / m_A_eq) / np.log(2) 
+        b[0] = F_t / C
+        temprature[:,t]= temprature[:,t-1] +  G@temprature[:,t-1] + b.T
+
+
+    return [m, temprature[0,:], temprature[1,:]]
+
+# see https://www.umr-cnrm.fr/IMG/pdf/2box_i.pdf
+def simulate_dynamic_new(A_set, m0, T, 
+    e=None,
+    C=7.3, 
+    C0=106, 
+    l=1.13, 
+    gamma= 0.73,
+    FX_ratio = 1,
+    F2XCO2 = 3.6813,
+    TAT0=0,#1.1,
+    TOC0=0,#0.27,
+    m_A_eq = 589
+    ) -> list:
+
+    p = A_set[0].shape[0]
+    assert p == len(m0)
+
+    # Initial variables
+    if e is None:
+        e = np.zeros(shape=(p,T))
+
+    assert T == e.shape[1]
+
+    if np.isscalar(FX_ratio):
+        FX_ratio = np.ones(T)*FX_ratio
+    else:
+        assert len(FX_ratio)==T
+
+    m = np.empty(shape=(p, T))
+    temprature_oc = np.zeros(T)
+    temprature_at = np.zeros(T)
+
+    G = np.zeros(shape=(2,2))
+    G[0,0] = -(l+gamma)/C
+    G[0,1] = gamma/C
+    G[1,0] = gamma/C0
+    G[1,1] = -gamma/C0
+
+    # Using m_new = Am_new + m 
+    # (I-A)m_new = m 
+    #  m_new = inv(I-A) @ m
+    # than we add new emission on, i.e., m_new_t += e_t
+    # A is now time depenatnt ... we need to do this on every iteration
+    I = np.eye(p)
+
+    temprature = np.zeros(shape=(2,T))
+    temprature[0,0] = TAT0
+    temprature[1,0] = TOC0
+
+    b = np.zeros(2).T 
+
+    m[:, 0] = m0
+    m[:, 0] += e[:,0]
+    for t in range(1, T):
+
+        B = np.linalg.inv(I - A_set[t])
+        m[:, t] = B @ m[:, t - 1] + e[:,t]
+        F_t = FX_ratio[t-1] * F2XCO2 * np.log(m[0, t-1] / m_A_eq) / np.log(2) 
+        b[0] = F_t / C
+        temprature[:,t]= temprature[:,t-1] + G@temprature[:,t-1] + b
+
+    return [m, temprature[0,:], temprature[1,:]]
 
 def load_results(root, test_name, model_set=[model_3sr, model_4pr],T_sim_set=[500]):
     

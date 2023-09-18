@@ -98,10 +98,12 @@ def cmip_emission(scenerio_name: str, T_start: int = 1765, T_end: int = 2500, fo
 
     if emission_type=='fossil':
         inx_co2_emission=[1]
-    if emission_type=='fossil+land':
+    elif emission_type=='fossil+land':
         inx_co2_emission=[1,2]
-    if emission_type=='land':
+    elif emission_type=='land':
         inx_co2_emission=[2]
+    else:
+        raise Exception("Invalid emission_type")
 
     data_val = np.array(np.sum(temp[:, inx_co2_emission], 1), dtype='float')
     data_year = np.array(temp[:, inx_time], dtype='int')
@@ -116,7 +118,7 @@ def cmip_emission(scenerio_name: str, T_start: int = 1765, T_end: int = 2500, fo
 
     return [data_val, data_year]
 
-def cmip_concentration(scenerio_name: str, T_start: int = 1765, T_end: int = 2500, folder_name: str = 'data/concentration/' ):
+def cmip_concentration(scenerio_name: str, T_start: int = 1765, T_end: int = 2500,  concentration_type:Union['CO2EQ','KYOTO-CO2EQ','CO2'] = 'CO2' , folder_name: str = 'data/concentration/' ):
 
     assert T_start >= 1765
     assert T_end <= 2500
@@ -135,8 +137,16 @@ def cmip_concentration(scenerio_name: str, T_start: int = 1765, T_end: int = 250
     #8. - 19.            - Flourinated Gases controlled under the Kyoto Protocol
     #20. - 35.           - Ozone Depleting Substances controlled under the Montreal Protocol
 
-    inx_time=0
-    inx_co2_conc = 3
+    inx_time = 0
+
+    if concentration_type == 'CO2EQ':
+        inx_co2_conc = 1
+    elif concentration_type == 'KYOTO-CO2EQ':
+        inx_co2_conc = 2
+    elif concentration_type == 'CO2':
+        inx_co2_conc = 3
+    else:
+        raise Exception("Invalid concentration_type")
 
     data_val = np.array(temp[:, inx_co2_conc], dtype='float')
     data_year = np.array(temp[:, inx_time], dtype='int')
@@ -198,6 +208,45 @@ def cmip_temperature(scenerio_name: str, T_start: int = 1765, T_end: int = 2500,
     data_year = data_year_full[i_start:i_end]
 
     return [data_val, data_year]
+
+
+def reactive_forcing(T_start: int = 1765, T_end: int = 2500, folder_name: str = 'data/forcing/'):
+
+
+    radiative_forcing_co2_data   = np.loadtxt(folder_name + '/radiative_forcing_co2.txt').T
+    radiative_forcing_total_data = np.loadtxt(folder_name + '/radiative_forcing_total.txt').T
+
+    year = radiative_forcing_co2_data[0,:]
+
+    radiative_forcing_co2={}
+    radiative_forcing_total={}
+    radiative_forcing_ratio={}
+
+
+    temp_1=0
+    temp_2=0
+    temp_3=0
+
+    for i,scenerio_name in enumerate(['RCP2.6', 'RCP4.5', 'RCP6.0', 'RCP8.5']):
+        
+        temp_1 += radiative_forcing_co2_data[i+1,:]
+        temp_2 += radiative_forcing_total_data[i+1,:]
+        temp_3 += radiative_forcing_total_data[i+1,:]/radiative_forcing_co2_data[i+1,:]
+
+        radiative_forcing_co2[scenerio_name]   = np.interp(np.arange(T_start,T_end+1), year, radiative_forcing_co2_data[i+1,:])
+        radiative_forcing_total[scenerio_name] = np.interp(np.arange(T_start,T_end+1), year, radiative_forcing_total_data[i+1,:])
+        radiative_forcing_ratio[scenerio_name] = np.interp(np.arange(T_start,T_end+1), year, radiative_forcing_total_data[i+1,:]/radiative_forcing_co2_data[i+1,:])
+
+
+    radiative_forcing_co2['avg']   =np.interp(np.arange(T_start,T_end+1), year, temp_1/4)
+    radiative_forcing_total['avg'] =np.interp(np.arange(T_start,T_end+1), year, temp_2/4)
+    radiative_forcing_ratio['avg'] =np.interp(np.arange(T_start,T_end+1), year, temp_3/4)
+
+
+    return[radiative_forcing_co2,radiative_forcing_ratio,np.arange(T_start,T_end+1)]
+
+
+
 
 def check_error():
 
